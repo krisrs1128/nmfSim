@@ -13,8 +13,7 @@
 #' @param factors [list] A list of one-dimensional factors on which we compute
 #'   the full cross-product.
 #' @param path [string] The path to which to save the configurations JSON.
-#' @return NULL
-#' @side-effects Writes the configurations JSON to path.
+#' @return NULL. side-effects: Writes the configurations JSON to path.
 #' @examples
 #' sim_factors <- list(
 #'   "N" = c(50, 100, 200),

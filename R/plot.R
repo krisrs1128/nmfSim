@@ -20,7 +20,12 @@
 score_means <- function(scores, grouping_vars) {
   scores %>%
     group_by_(.dots = grouping_vars) %>%
-    summarise(mean_1 = mean(value_1), mean_2 = mean(value_2), truth_1 = truth_1[1], truth_2 = truth_2[1])
+    summarise(
+      mean_1 = mean(value_1),
+      mean_2 = mean(value_2),
+      truth_1 = truth_1[1],
+      truth_2 = truth_2[1]
+    )
 }
 
 #' Plot Contours and Associated Coordinate
@@ -58,7 +63,7 @@ scores_contours <- function(plot_data, plot_opts) {
     ) +
     scale_x_sqrt(limits = plot_opts$x_lim, expand = c(0, 0)) +
     scale_y_sqrt(limits = plot_opts$y_lim, expand = c(0, 0)) +
-    theme(plot.margin=grid::unit(c(0,0,0,0), "mm"))
+    theme(plot.margin=unit(c(0,0,0,0), "mm"))
   p2 <- p1 +
     facet_wrap(formula(paste0("~", plot_opts$group))) +
     theme(plot.margin = unit(c(0,0,0,0), "mm"))
