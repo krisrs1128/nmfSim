@@ -41,7 +41,8 @@ fit_model <- function(y, model_opts = list(), prior_opts = list()) {
     "N" = nrow(y),
     "P" = ncol(y),
     "y" = y,
-    "K" = model_opts$K
+    "K" = model_opts$K,
+    "zero_inf_prob" = model_opts$zero_inf_prob
   )
   stan_data <- c(stan_data, prior_opts)
 

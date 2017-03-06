@@ -38,6 +38,7 @@ write_configs <- function(sim_factors,
   config <- vector(length = nrow(config_df), mode = "list")
   sim_ix <- colnames(config_df) %in% names(sim_factors)
   model_ix <- colnames(config_df) %in% names(model_factors)
+  prior_fields <- c("a", "b", "c", "d", "zero_inf_prob")
 
   ## reshape into a form appropriate for the config json
   for (i in seq_len(nrow(config_df))) {
@@ -47,7 +48,6 @@ write_configs <- function(sim_factors,
     config[[i]]$model_opts <- as.list(config_df[i, model_ix]) %>%
       merge_model_opts()
 
-    prior_fields <- c("a", "b", "c", "d", "zero_inf_prob")
     config[[i]]$prior_opts <- config[[i]]$sim_opts[prior_fields]
 
     config[[i]]$output_dir <- output_dir
