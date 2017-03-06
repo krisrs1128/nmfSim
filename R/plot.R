@@ -1,3 +1,27 @@
+#! /usr/bin/env Rscript
+
+## File description -------------------------------------------------------------
+## Helper functions for plotting the output of an NMF simulation experiment.
+
+#' Get Score Means
+#'
+#' This groups the main scores matrix by sample index, and average posterior
+#' samples.
+#'
+#' @param scores [data.frame] The data.frame giving the scores for true and
+#'   simulated data.
+#' @param grouping_vars [character vector] The names of columns on which to
+#'   group. Everything else will be averaged over.
+#' @return scores [data.frame] The original data.frame with the value_1 and
+#'   value_2 columns averaged depending on grouping variables.
+#' @importFrom magrittr %>%
+#' @importFrom dplyr group_by_ summarise
+#' @export
+score_means <- function(scores, grouping_vars) {
+  scores %>%
+    group_by_(.dots = grouping_vars) %>%
+    summarise(mean_1 = mean(value_1), mean_2 = mean(value_2), truth_1 = truth_1[1], truth_2 = truth_2[1])
+}
 
 #' Plot Contours and Associated Coordinate
 #'
