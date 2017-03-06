@@ -17,7 +17,7 @@
 merge_model_opts <- function(opts = list()) {
   default_opts <- list(
     "inference" = "gibbs",
-    "method" = file.path(.libPaths(), "nmfSim", "inst", "extdata", "nmf_gamma_poisson.stan"),
+    "method" = file.path(.libPaths(), "nmfSim", "extdata", "nmf_gamma_poisson.stan"),
     "K" = 2
   )
   modifyList(default_opts, opts)
@@ -34,7 +34,7 @@ merge_model_opts <- function(opts = list()) {
 #' @param prior_opts [list] A list of prior information, required by the NMF
 #'   fitting STAN code.
 #' @return result [stan object] The fitted stan object.
-#' @importFrom rstan stan stan_model vb extract
+#' @importFrom rstan stan stan_model vb extract cpp_object_initializer
 #' @export
 fit_model <- function(y, model_opts = list(), prior_opts = list()) {
   stan_data <- list(

@@ -13,6 +13,9 @@ the full cross-product.}
 
 \item{path}{[string] The path to which to save the configurations JSON.}
 }
+\value{
+NULL. side-effects: Writes the configurations JSON to path.
+}
 \description{
 This generates the JSON file on which all the experiments will be based. It
 just creates a JSON will the full factorial combinations of input options.
