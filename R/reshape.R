@@ -104,7 +104,7 @@ reshape_samples <- function(samples, truth, dims) {
     dcast.data.table(
       sprintf("%s + iteration ~ %s", dims[1], dims[2]),
       value.var = c("value", "truth")
-  )
+    )
 }
 
 #' Wrapper for reshape_samples, applying too many fits
