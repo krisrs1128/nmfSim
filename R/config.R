@@ -25,6 +25,8 @@
 #'   "method" = c("zinf_nmf", "nmf")
 #' )
 #' #write_configs(sim_factors, model_factors)
+#' @importFrom jsonlite toJSON
+#' @export
 write_configs <- function(sim_factors,
                           model_factors,
                           n_batches = 50,
