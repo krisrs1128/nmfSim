@@ -41,8 +41,7 @@ fit_model <- function(y, model_opts = list(), prior_opts = list()) {
     "N" = nrow(y),
     "P" = ncol(y),
     "y" = y,
-    "K" = model_opts$K,
-    "zero_inf_prob" = model_opts$zero_inf_prob
+    "K" = model_opts$K
   )
   stan_data <- c(stan_data, prior_opts)
 
@@ -87,9 +86,10 @@ nmf_posterior_means <- function(samples) {
 bootstrap_vb <- function(method, data, B = 500) {
   ## First, make a VB fit, to use as the estimated parameters in the parametric
   ## bootstrap
-  f <- stan_model(method)
+  f <- stan_model(method, auto_write = FALSE)
   vb_fit <- vb(f, data)
   samples <- extract(vb_fit)
+  means0 <- nmf_posterior_means(samples)
 
   theta_boot <- array(0, c(data$N, data$K, B))
   beta_boot <- array(0, c(data$P, data$K, B))
@@ -102,7 +102,7 @@ bootstrap_vb <- function(method, data, B = 500) {
 
     ## Simulate according to fitted parameters
     cur_data <- data
-    cur_data$y <- sim_from_params(theta_hat, beta_hat, data$zero_inf_prob)
+    cur_data$y <- sim_from_params(means0$theta_hat, means0$beta_hat, data$zero_inf_prob)
     cur_fit <- vb(f, cur_data)
 
     ## Fit another VB iteration
