@@ -46,18 +46,68 @@ fit_model <- function(y, model_opts = list(), prior_opts = list()) {
   )
   stan_data <- c(stan_data, prior_opts)
 
-  if (grepl("zero", model_opts$method)) {
-    stan_data$zero_inf_prob <- NULL
-  }
-
   if (model_opts$inference == "gibbs") {
-    result <- stan(file = model_opts$method, data = stan_data, chain = 1)
+    result <- rstan::extract(stan(file = model_opts$method, data = stan_data, chain = 1))
   } else if (model_opts$inference == "vb") {
     f <- stan_model(model_opts$method)
-    result <- vb(f, stan_data)
+    result <- rstan::extract(vb(f, stan_data))
+  } else if (model_opts$inference == "bootstrap") {
+    result <- bootstrap_vb(model_opts$method, data = stan_data)
   } else {
     stop("model_opts$inference is not recognized")
   }
 
-  extract(result)
+  result
+}
+
+#' Wrapper to get posterior means in NMF
+#'
+#' @param samples The output of a call to vb() using the nmf code
+#' @return result [list] A list with the posterior means as matrices, with
+#'   factors (k) as columns
+nmf_posterior_means <- function(samples) {
+  list(
+    "theta_hat" = t(ldaSim::posterior_mean(samples$theta, c("k", "i"))),
+    "beta_hat" = t(ldaSim::posterior_mean(samples$beta, c("k", "v")))
+  )
+}
+
+#' Fit Parameteric Bootstrap for Variational Bayes
+#'
+#' @param method [character] The path to stan file containing model fitting
+#'   code.
+#' @param data [list] A list of data to input in the data{} field of the stan
+#'   file.
+#' @param B [integer] The number of bootstrap replicates to compute.
+#' @return result [list] A list containing beta and theta fields, which is an
+#'   array similar to what is output by stan(), except columns are now bootstrap
+#'   replicates instead of sampling iterations
+bootstrap_vb <- function(method, data, B = 3) {
+  ## First, make a VB fit, to use as the estimated parameters in the parametric
+  ## bootstrap
+  f <- stan_model(method)
+  vb_fit <- vb(f, data)
+  samples <- extract(vb_fit)
+
+  theta_boot <- array(0, c(data$N, data$K, B))
+  beta_boot <- array(0, c(data$P, data$K, B))
+
+  for (b in seq_len(B)) {
+
+    if (b %% 10 == 0) {
+      cat(sprintf("Bootstrap iteration %s\n", b))
+    }
+
+    ## Simulate according to fitted parameters
+    cur_data <- data
+    cur_data$y <- sim_from_params(theta_hat, beta_hat, data$zero_inf_prob)
+    cur_fit <- vb(f, cur_data)
+
+    ## Fit another VB iteration
+    cur_means <- nmf_posterior_means(extract(cur_fit))
+    theta_boot[,, b] <- cur_means$theta_hat
+    beta_boot[,, b] <- cur_means$beta_hat
+  }
+
+  list("theta" = theta_boot, "beta" = beta_boot)
 }

@@ -44,33 +44,49 @@ nmf_sim <- function(opts) {
     opts$N, opts$K
   )
 
-  ## faopts$ctors
+  ## factors
   beta <- matrix(
     rgamma(opts$P * opts$K, rate = opts$c, shape = opts$d),
     opts$P, opts$K
   )
 
+  sim <- sim_from_params(theta, beta, opts$zero_inf_prob)
+  list(
+    "theta" = theta,
+    "beta" = beta,
+    "mask" = sim$mask,
+    "y" = sim$y
+  )
+}
+
+#' Simulate (ZI)-NMF data from theta, beta, and inflation parameters
+#'
+#' @param theta [matrix] An N x K matrix of scores
+#' @param beta [matrix] A V x K matrix of factors
+#' @param zero_inf_prob [numeric] The amount of zero inflation; i.e., the
+#'   proportion in [0, 1] that will be set to zero.
+#' @return y [matrix] The N x V matrix of observed (potentially zero-inflated
+#'   counts).
+sim_from_params <- function(theta, beta, zero_inf_prob = 0) {
+  N <- nrow(theta)
+  P <- nrow(beta)
+
   ## observations
   y <- matrix(
-    rpois(opts$N * opts$P, theta %*% t(beta)),
-    opts$N, opts$P
+    rpois(N * P, theta %*% t(beta)),
+    N, P
   )
 
   ## set some proportion to zero
   mask <- matrix(
     sample(
       c(0, 1),
-      opts$N * opts$P,
+      N * P,
       replace = TRUE,
-      prob = c(1 - opts$zero_inf_prob, opts$zero_inf_prob)),
-    opts$N, opts$P
+      prob = c(1 - zero_inf_prob, zero_inf_prob)),
+    N, P
   )
   y[mask == 1] <- 0
 
-  list(
-    "theta" = theta,
-    "beta" = beta,
-    "mask" = mask,
-    "y" = y
-  )
+  list("mask" = mask, "y" = y)
 }
