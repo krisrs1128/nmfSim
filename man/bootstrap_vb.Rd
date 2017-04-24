@@ -4,7 +4,7 @@
 \alias{bootstrap_vb}
 \title{Fit Parameteric Bootstrap for Variational Bayes}
 \usage{
-bootstrap_vb(method, data, B = 10)
+bootstrap_vb(method, data, B = 3)
 }
 \arguments{
 \item{method}{[character] The path to stan file containing model fitting
