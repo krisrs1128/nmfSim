@@ -103,9 +103,9 @@ bootstrap_vb <- function(method, data, B = 500) {
     ## Simulate according to fitted parameters
     cur_data <- data
     cur_data$y <- sim_from_params(means0$theta_hat, means0$beta_hat, data$zero_inf_prob)
-    cur_fit <- vb(f, cur_data)
 
     ## Fit another VB iteration
+    cur_fit <- vb(f, cur_data)
     cur_means <- nmf_posterior_means(extract(cur_fit))
     theta_boot[,, b] <- cur_means$theta_hat
     beta_boot[,, b] <- cur_means$beta_hat
