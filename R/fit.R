@@ -102,7 +102,11 @@ bootstrap_vb <- function(method, data, B = 500) {
 
     ## Simulate according to fitted parameters
     cur_data <- data
-    cur_data$y <- sim_from_params(means0$theta_hat, means0$beta_hat, data$zero_inf_prob)
+    cur_data$y <- sim_from_params(
+      means0$theta_hat,
+      means0$beta_hat,
+      data$zero_inf_prob
+    )$y
 
     ## Fit another VB iteration
     cur_fit <- vb(f, cur_data)
