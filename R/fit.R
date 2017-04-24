@@ -55,9 +55,69 @@ fit_model <- function(y, model_opts = list(), prior_opts = list()) {
   } else if (model_opts$inference == "vb") {
     f <- stan_model(model_opts$method)
     result <- vb(f, stan_data)
+  } else if (model_opts$inference == "bootstrap") {
+    result <- bootstrap_vb(model_opts$method, data = stan_data)
   } else {
     stop("model_opts$inference is not recognized")
   }
 
-  extract(result)
+  rstan::extract(result)
+}
+
+nmf_posterior_means <- function(samples) {
+  list(
+    "theta_hat" = t(ldaSim::posterior_mean(samples$theta, c("k", "i"))),
+    "beta_hat" = t(ldaSim::posterior_mean(samples$beta, c("k", "v")))
+  )
+}
+
+bootstrap_vb <- function(method, data, B = 3) {
+
+  ## First, make a VB fit, to use as the estimated parameters in the parametric
+  ## bootstrap
+  f <- stan_model(method)
+  vb_fit <- vb(f, data)
+  samples <- extract(vb_fit)
+
+  tmp_theta <- tempfile()
+  tmp_beta <- tempfile()
+
+  for (b in seq_len(B)) {
+
+    if (b %% 10 == 0) {
+      cat(sprintf("Bootstrap iteration %s\n", b))
+    }
+
+    cur_data <- data
+    cur_data$y <- sim_from_params(theta_hat, beta_hat, data$zero_inf_prob)
+    cur_fit <- vb(f, cur_data)
+
+    cur_means <- nmf_posterior_means(extract(cur_fit))
+
+    theta_data <- melt(cur_means$theta_hat, varnames = c("i", "k", "theta"))
+    theta_data$iteration = b
+    beta_data <- melt(cur_means$beta_hat, varnames = c("v", "k", "beta"))
+    beta_data$iteration = b
+
+    write.table(
+      theta_data,
+      tmp_theta,
+      append = TRUE,
+      row.names = FALSE,
+      col.names = b == 1
+    )
+
+    write.table(
+      beta_data,
+      tmp_theta,
+      append = TRUE,
+      row.names = FALSE,
+      col.names = b == 1
+    )
+  }
+
+  list(
+    "theta" = readr::read_csv(tmp_theta),
+    "beta" = readr::read_csv(tmp_beta)
+  )
 }

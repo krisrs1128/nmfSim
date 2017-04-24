@@ -50,11 +50,12 @@ nmf_sim <- function(opts) {
     opts$P, opts$K
   )
 
+  sim <- sim_from_params(theta, beta, opts$zero_inf_prob)
   list(
     "theta" = theta,
     "beta" = beta,
-    "mask" = mask,
-    "y" = sim_from_params(theta, beta, opts$zero_inf_prob)
+    "mask" = sim$mask,
+    "y" = sim$y
   )
 }
 
@@ -87,5 +88,5 @@ sim_from_params <- function(theta, beta, zero_inf_prob = 0) {
   )
   y[mask == 1] <- 0
 
-  y
+  list("mask" = mask, "y" = y)
 }
