@@ -74,6 +74,8 @@ match_matrix <- function(X, Z) {
 #' @return reshaped [data.table] The melted scores, with truth along with samples.
 #' @importFrom magrittr %>%
 #' @importFrom data.table setDT dcast.data.table
+#' @importFrom dplyr left_join
+#' @importFrom reshape2 melt
 #' @export
 reshape_samples <- function(samples, truth, dims) {
   ## align latent factors (label switchign problem)
