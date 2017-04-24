@@ -65,6 +65,7 @@ fit_model <- function(y, model_opts = list(), prior_opts = list()) {
 #' @param samples The output of a call to vb() using the nmf code
 #' @return result [list] A list with the posterior means as matrices, with
 #'   factors (k) as columns
+#' @export
 nmf_posterior_means <- function(samples) {
   list(
     "theta_hat" = t(ldaSim::posterior_mean(samples$theta, c("k", "i"))),
@@ -82,7 +83,8 @@ nmf_posterior_means <- function(samples) {
 #' @return result [list] A list containing beta and theta fields, which is an
 #'   array similar to what is output by stan(), except columns are now bootstrap
 #'   replicates instead of sampling iterations
-bootstrap_vb <- function(method, data, B = 3) {
+#' @export
+bootstrap_vb <- function(method, data, B = 500) {
   ## First, make a VB fit, to use as the estimated parameters in the parametric
   ## bootstrap
   f <- stan_model(method)
