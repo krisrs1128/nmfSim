@@ -60,6 +60,11 @@ fit_model <- function(y, model_opts = list(), prior_opts = list()) {
   result
 }
 
+#' Wrapper to get posterior means in NMF
+#'
+#' @param samples The output of a call to vb() using the nmf code
+#' @return result [list] A list with the posterior means as matrices, with
+#'   factors (k) as columns
 nmf_posterior_means <- function(samples) {
   list(
     "theta_hat" = t(ldaSim::posterior_mean(samples$theta, c("k", "i"))),
@@ -67,8 +72,17 @@ nmf_posterior_means <- function(samples) {
   )
 }
 
+#' Fit Parameteric Bootstrap for Variational Bayes
+#'
+#' @param method [character] The path to stan file containing model fitting
+#'   code.
+#' @param data [list] A list of data to input in the data{} field of the stan
+#'   file.
+#' @param B [integer] The number of bootstrap replicates to compute.
+#' @return result [list] A list containing beta and theta fields, which is an
+#'   array similar to what is output by stan(), except columns are now bootstrap
+#'   replicates instead of sampling iterations
 bootstrap_vb <- function(method, data, B = 3) {
-
   ## First, make a VB fit, to use as the estimated parameters in the parametric
   ## bootstrap
   f <- stan_model(method)
@@ -84,10 +98,12 @@ bootstrap_vb <- function(method, data, B = 3) {
       cat(sprintf("Bootstrap iteration %s\n", b))
     }
 
+    ## Simulate according to fitted parameters
     cur_data <- data
     cur_data$y <- sim_from_params(theta_hat, beta_hat, data$zero_inf_prob)
     cur_fit <- vb(f, cur_data)
 
+    ## Fit another VB iteration
     cur_means <- nmf_posterior_means(extract(cur_fit))
     theta_boot[,, b] <- cur_means$theta_hat
     beta_boot[,, b] <- cur_means$beta_hat
