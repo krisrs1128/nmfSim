@@ -46,22 +46,18 @@ fit_model <- function(y, model_opts = list(), prior_opts = list()) {
   )
   stan_data <- c(stan_data, prior_opts)
 
-  if (grepl("zero", model_opts$method)) {
-    stan_data$zero_inf_prob <- NULL
-  }
-
   if (model_opts$inference == "gibbs") {
-    result <- stan(file = model_opts$method, data = stan_data, chain = 1)
+    result <- rstan::extract(stan(file = model_opts$method, data = stan_data, chain = 1))
   } else if (model_opts$inference == "vb") {
     f <- stan_model(model_opts$method)
-    result <- vb(f, stan_data)
+    result <- rstan::extract(vb(f, stan_data))
   } else if (model_opts$inference == "bootstrap") {
     result <- bootstrap_vb(model_opts$method, data = stan_data)
   } else {
     stop("model_opts$inference is not recognized")
   }
 
-  rstan::extract(result)
+  result
 }
 
 nmf_posterior_means <- function(samples) {
@@ -79,8 +75,8 @@ bootstrap_vb <- function(method, data, B = 3) {
   vb_fit <- vb(f, data)
   samples <- extract(vb_fit)
 
-  tmp_theta <- tempfile()
-  tmp_beta <- tempfile()
+  theta_boot <- array(0, c(data$N, data$K, B))
+  beta_boot <- array(0, c(data$P, data$K, B))
 
   for (b in seq_len(B)) {
 
@@ -93,31 +89,9 @@ bootstrap_vb <- function(method, data, B = 3) {
     cur_fit <- vb(f, cur_data)
 
     cur_means <- nmf_posterior_means(extract(cur_fit))
-
-    theta_data <- melt(cur_means$theta_hat, varnames = c("i", "k", "theta"))
-    theta_data$iteration = b
-    beta_data <- melt(cur_means$beta_hat, varnames = c("v", "k", "beta"))
-    beta_data$iteration = b
-
-    write.table(
-      theta_data,
-      tmp_theta,
-      append = TRUE,
-      row.names = FALSE,
-      col.names = b == 1
-    )
-
-    write.table(
-      beta_data,
-      tmp_theta,
-      append = TRUE,
-      row.names = FALSE,
-      col.names = b == 1
-    )
+    theta_boot[,, b] <- cur_means$theta_hat
+    beta_boot[,, b] <- cur_means$beta_hat
   }
 
-  list(
-    "theta" = readr::read_csv(tmp_theta),
-    "beta" = readr::read_csv(tmp_beta)
-  )
+  list("theta" = theta_boot, "beta" = beta_boot)
 }
