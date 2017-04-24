@@ -67,6 +67,7 @@ nmf_sim <- function(opts) {
 #'   proportion in [0, 1] that will be set to zero.
 #' @return y [matrix] The N x V matrix of observed (potentially zero-inflated
 #'   counts).
+#' @export
 sim_from_params <- function(theta, beta, zero_inf_prob = 0) {
   N <- nrow(theta)
   P <- nrow(beta)
