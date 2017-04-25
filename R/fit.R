@@ -109,10 +109,12 @@ bootstrap_vb <- function(method, data, B = 500) {
     )$y
 
     ## Fit another VB iteration
-    cur_fit <- vb(f, cur_data)
-    cur_means <- nmf_posterior_means(extract(cur_fit))
-    theta_boot[,, b] <- cur_means$theta_hat
-    beta_boot[,, b] <- cur_means$beta_hat
+    cur_fit <- try(vb(f, cur_data))
+    if (class(cur_fit) != "try-error") {
+      cur_means <- nmf_posterior_means(extract(cur_fit))
+      theta_boot[,, b] <- cur_means$theta_hat
+      beta_boot[,, b] <- cur_means$beta_hat
+    }
   }
 
   list("theta" = theta_boot, "beta" = beta_boot)
