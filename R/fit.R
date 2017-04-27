@@ -45,6 +45,7 @@ fit_model <- function(y, model_opts = list(), prior_opts = list()) {
   )
   stan_data <- c(stan_data, prior_opts)
 
+  clear_tmp()
   if (model_opts$inference == "gibbs") {
     result <- rstan::extract(stan(file = model_opts$method, data = stan_data, chain = 1))
   } else if (model_opts$inference == "vb") {
@@ -72,6 +73,14 @@ nmf_posterior_means <- function(samples) {
   )
 }
 
+#' Clear all files in tempdir()
+#'
+#' Hack used to avoid crashing https://groups.google.com/forum/#!category-topic/stan-users/general/Bg8HhyB6qG4
+clear_tmp <- function() {
+  tmp_files <- list.files(tempdir(), full.names = TRUE)
+  file.remove(tmp_files)
+}
+
 #' Fit Parameteric Bootstrap for Variational Bayes
 #'
 #' @param method [character] The path to stan file containing model fitting
@@ -86,7 +95,7 @@ nmf_posterior_means <- function(samples) {
 bootstrap_vb <- function(method, data, B = 500) {
   ## First, make a VB fit, to use as the estimated parameters in the parametric
   ## bootstrap
-  f <- stan_model(method, auto_write = FALSE)
+  f <- stan_model(method)
   vb_fit <- vb(f, data)
   samples <- extract(vb_fit)
   means0 <- nmf_posterior_means(samples)
@@ -109,6 +118,7 @@ bootstrap_vb <- function(method, data, B = 500) {
     )$y
 
     ## Fit another VB iteration
+    clear_temp()
     cur_fit <- try(vb(f, cur_data))
     if (class(cur_fit) != "try-error") {
       cur_means <- nmf_posterior_means(extract(cur_fit))
