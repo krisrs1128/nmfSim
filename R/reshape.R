@@ -140,7 +140,7 @@ reshape_all_samples <- function(fits,
                                 sim_seed = 01112017) {
   expers <- fromJSON(config_path, simplifyVector = FALSE)
 
-  fit_ids <- str_extract(fits, "[0-9]+")
+  fit_ids <- str_extract(basename(fits), "[^\\.]+")
   exper_ids <- sapply(expers, function(x) { x$id })
   samples <- list()
   for (i in seq_along(fits)) {
@@ -156,7 +156,8 @@ reshape_all_samples <- function(fits,
     )
 
     ## join in simulation parameters
-    cur_config <- data.frame(c(cur_exper$sim_opts, cur_exper$model_opts))
+    cur_config <- data.frame(c(cur_exper$sim_opts, cur_exper$model_opts)) %>%
+      rename(K_fit = K.1)
     samples[[i]] <- cbind(samples[[i]], cur_config)
   }
 

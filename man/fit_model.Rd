@@ -4,16 +4,13 @@
 \alias{fit_model}
 \title{Fit a generic NMF Stan Model}
 \usage{
-fit_model(y, model_opts = list(), prior_opts = list())
+fit_model(y, model_opts = list())
 }
 \arguments{
 \item{y}{[matrix] The data on which to fit the NMF model.}
 
 \item{model_opts}{[list] A partially filled list of model fitting options.
 Unspecified options will be passed into merge_model_opts().}
-
-\item{prior_opts}{[list] A list of prior information, required by the NMF
-fitting STAN code.}
 }
 \value{
 result [stan object] The fitted stan object.

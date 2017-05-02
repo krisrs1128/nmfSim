@@ -16,10 +16,7 @@ merge_nmf_opts <- function(opts = list()) {
     "K" = 2,
     "N" = 100,
     "P" = 75,
-    "a" = 1,
-    "b" = 1,
-    "c" = 1,
-    "d" = 1,
+    "prior_params" = rep(1, 4),
     "zero_inf_prob" = 0
   )
   modifyList(default_opts, opts)
@@ -40,13 +37,13 @@ nmf_sim <- function(opts) {
 
   ## scores
   theta <- matrix(
-    rgamma(opts$N * opts$K, rate = opts$a, shape = opts$b),
+    rgamma(opts$N * opts$K, rate = opts$prior_params[1], shape = opts$prior_params[2]),
     opts$N, opts$K
   )
 
   ## factors
   beta <- matrix(
-    rgamma(opts$P * opts$K, rate = opts$c, shape = opts$d),
+    rgamma(opts$P * opts$K, rate = opts$prior_params[3], shape = opts$prior_params[4]),
     opts$P, opts$K
   )
 

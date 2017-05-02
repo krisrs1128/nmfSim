@@ -4,8 +4,8 @@
 \alias{write_configs}
 \title{Write experiment configurations files}
 \usage{
-write_configs(sim_factors, model_factors, n_batches = 50,
-  config_path = "config.json", base_id = "", output_dir = "./")
+write_configs(config_df, n_batches = 50, config_path = "config.json",
+  base_id = "fit", output_dir = "./")
 }
 \arguments{
 \item{factors}{[list] A list of one-dimensional factors on which we compute
