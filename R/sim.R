@@ -88,6 +88,7 @@ sim_from_params <- function(theta, beta, zero_inf_prob = 0) {
     N, P
   )
   y[mask == 1] <- 0
+  class(y) <- "integer"
 
   list("mask" = mask, "y" = y)
 }
