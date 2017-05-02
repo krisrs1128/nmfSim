@@ -18,7 +18,9 @@ merge_model_opts <- function(opts = list()) {
   default_opts <- list(
     "inference" = "gibbs",
     "method" = file.path(.libPaths(), "nmfSim", "extdata", "nmf_gamma_poisson.stan"),
-    "K" = 2
+    "K" = 2,
+    "A" = 1e3,
+    "zero_inf_prob" = 0
   )
   modifyList(default_opts, opts)
 }
@@ -31,19 +33,18 @@ merge_model_opts <- function(opts = list()) {
 #' @param y [matrix] The data on which to fit the NMF model.
 #' @param model_opts [list] A partially filled list of model fitting options.
 #'   Unspecified options will be passed into merge_model_opts().
-#' @param prior_opts [list] A list of prior information, required by the NMF
-#'   fitting STAN code.
 #' @return result [stan object] The fitted stan object.
 #' @importFrom rstan stan stan_model vb extract cpp_object_initializer
 #' @export
-fit_model <- function(y, model_opts = list(), prior_opts = list()) {
+fit_model <- function(y, model_opts = list()) {
   stan_data <- list(
     "N" = nrow(y),
     "P" = ncol(y),
     "y" = y,
-    "K" = model_opts$K
+    "K" = model_opts$K,
+    "A" = model_opts$A,
+    "zero_inf_prob" = model_opts$zero_inf_prob
   )
-  stan_data <- c(stan_data, prior_opts)
 
   clear_tmp()
   if (model_opts$inference == "gibbs") {
@@ -100,8 +101,8 @@ bootstrap_vb <- function(method, data, B = 1000) {
   samples <- extract(vb_fit)
   means0 <- nmf_posterior_means(samples)
 
-  theta_boot <- array(0, c(B, data$K, data$N))
-  beta_boot <- array(0, c(B, data$K, data$P))
+  theta_boot <- array(0, c(B, data$N, data$K))
+  beta_boot <- array(0, c(B, data$P, data$K))
 
   for (b in seq_len(B)) {
     cat(sprintf("Bootstrap iteration %s\n", b))
@@ -115,14 +116,13 @@ bootstrap_vb <- function(method, data, B = 1000) {
     )$y
 
     ## Fit another VB iteration
-    ## clear_tmp()
     cur_fit <- try(
       vb(f, cur_data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1)
     )
     if (class(cur_fit) != "try-error") {
       cur_means <- nmf_posterior_means(extract(cur_fit))
-      theta_boot[b,,] <- cur_means$theta_hat
-      beta_boot[b,,] <- cur_means$beta_hat
+      theta_boot[b,,] <- t(cur_means$theta_hat)
+      beta_boot[b,,] <- t(cur_means$beta_hat)
     }
   }
 
