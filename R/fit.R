@@ -45,6 +45,7 @@ fit_model <- function(y, model_opts = list(), prior_opts = list()) {
   )
   stan_data <- c(stan_data, prior_opts)
 
+  clear_tmp()
   if (model_opts$inference == "gibbs") {
     result <- rstan::extract(stan(file = model_opts$method, data = stan_data, chain = 1))
   } else if (model_opts$inference == "vb") {
@@ -72,6 +73,14 @@ nmf_posterior_means <- function(samples) {
   )
 }
 
+#' Clear all files in tempdir()
+#'
+#' Hack used to avoid crashing https://groups.google.com/forum/#!category-topic/stan-users/general/Bg8HhyB6qG4
+clear_tmp <- function() {
+  tmp_files <- list.files(tempdir(), full.names = TRUE)
+  file.remove(tmp_files)
+}
+
 #' Fit Parameteric Bootstrap for Variational Bayes
 #'
 #' @param method [character] The path to stan file containing model fitting
@@ -83,22 +92,19 @@ nmf_posterior_means <- function(samples) {
 #'   array similar to what is output by stan(), except columns are now bootstrap
 #'   replicates instead of sampling iterations
 #' @export
-bootstrap_vb <- function(method, data, B = 500) {
+bootstrap_vb <- function(method, data, B = 1000) {
   ## First, make a VB fit, to use as the estimated parameters in the parametric
   ## bootstrap
-  f <- stan_model(method, auto_write = FALSE)
-  vb_fit <- vb(f, data)
+  f <- stan_model(method)
+  vb_fit <- vb(f, data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1)
   samples <- extract(vb_fit)
   means0 <- nmf_posterior_means(samples)
 
-  theta_boot <- array(0, c(data$N, data$K, B))
-  beta_boot <- array(0, c(data$P, data$K, B))
+  theta_boot <- array(0, c(B, data$K, data$N))
+  beta_boot <- array(0, c(B, data$K, data$P))
 
   for (b in seq_len(B)) {
-
-    if (b %% 10 == 0) {
-      cat(sprintf("Bootstrap iteration %s\n", b))
-    }
+    cat(sprintf("Bootstrap iteration %s\n", b))
 
     ## Simulate according to fitted parameters
     cur_data <- data
@@ -109,11 +115,14 @@ bootstrap_vb <- function(method, data, B = 500) {
     )$y
 
     ## Fit another VB iteration
-    cur_fit <- try(vb(f, cur_data))
+    ## clear_tmp()
+    cur_fit <- try(
+      vb(f, cur_data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1)
+    )
     if (class(cur_fit) != "try-error") {
       cur_means <- nmf_posterior_means(extract(cur_fit))
-      theta_boot[,, b] <- cur_means$theta_hat
-      beta_boot[,, b] <- cur_means$beta_hat
+      theta_boot[b,,] <- cur_means$theta_hat
+      beta_boot[b,,] <- cur_means$beta_hat
     }
   }
 
