@@ -27,29 +27,25 @@
 #' #write_configs(sim_factors, model_factors)
 #' @importFrom jsonlite toJSON
 #' @export
-write_configs <- function(sim_factors,
-                          model_factors,
+write_configs <- function(config_df,
                           n_batches = 50,
                           config_path = "config.json",
-                          base_id = "",
+                          base_id = "fit",
                           output_dir = "./") {
-  config_df <- expand.grid(c(sim_factors, model_factors))
   config_df$batch <- rep(seq_len(n_batches), length.out = nrow(config_df))
 
   config <- vector(length = nrow(config_df), mode = "list")
-  sim_ix <- colnames(config_df) %in% names(sim_factors)
-  model_ix <- colnames(config_df) %in% names(model_factors)
-  prior_fields <- c("a", "b", "c", "d", "zero_inf_prob")
+  sim_ix <- colnames(config_df) %in% c("N", "P", "zero_inf_prob")
+  model_ix <- colnames(config_df) %in% c("inference", "method")
 
   ## reshape into a form appropriate for the config json
   for (i in seq_len(nrow(config_df))) {
     config[[i]]$sim_opts <- as.list(config_df[i, sim_ix]) %>%
       merge_nmf_opts()
+    config[[i]]$sim_opts$prior_params[1] <- config_df[i, "a"]
 
     config[[i]]$model_opts <- as.list(config_df[i, model_ix]) %>%
       merge_model_opts()
-
-    config[[i]]$prior_opts <- config[[i]]$sim_opts[prior_fields]
 
     config[[i]]$output_dir <- output_dir
     config[[i]]$id <- sprintf("%s-%d", base_id, i)
