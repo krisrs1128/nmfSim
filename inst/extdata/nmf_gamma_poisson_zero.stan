@@ -9,25 +9,28 @@ data{
   int<lower=0> P;
   int<lower=0> K;
   int<lower=0> y[N, P];
-  real<lower=0> a;
-  real<lower=0> b;
-  real<lower=0> c;
-  real<lower=0> d;
+  real<lower=0> A;
   real<lower=0, upper=1> zero_inf_prob;
 }
 
 parameters{
+  vector<lower=0> prior_params[4]; // prior parameters
   vector<lower=0>[K] theta[N]; // scores
   vector<lower=0>[K] beta[P]; // latent factors
 }
 
 model{
+  for (i in 1:4) {
+    prior_params[i] ~ gamma(2, 1 / A);
+
+  }
+
   for(i in 1:N) {
-    theta[i] ~ gamma(a,b); // componentwise gamma
+    theta[i] ~ gamma(prior_params[1], prior_params[2]); // componentwise gamma
   }
 
   for (j in 1:P) {
-    beta[j] ~ gamma(c,d);//componentwise gamma
+    beta[j] ~ gamma(prior_params[3], prior_params[4]);//componentwise gamma
   }
 
   for (i in 1:N) {
