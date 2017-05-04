@@ -96,7 +96,7 @@ bootstrap_vb <- function(method, data, B = 1000) {
 
   theta_boot <- array(0, c(B, data$N, data$K))
   beta_boot <- array(0, c(B, data$P, data$K))
-  prior_boot <- matrix(0, c(B, 4))
+  prior_boot <- matrix(0, B, 4)
 
   for (b in seq_len(B)) {
     cat(sprintf("Bootstrap iteration %s\n", b))
@@ -117,7 +117,7 @@ bootstrap_vb <- function(method, data, B = 1000) {
       cur_means <- nmf_posterior_means(extract(cur_fit))
       theta_boot[b,,] <- t(cur_means$theta_hat)
       beta_boot[b,,] <- t(cur_means$beta_hat)
-      prior_boot[b,] <- t(cur_means$prior_hat)
+      prior_boot[b,] <- cur_means$prior_hat
     }
   }
 
