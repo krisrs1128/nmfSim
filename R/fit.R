@@ -75,6 +75,14 @@ nmf_posterior_means <- function(samples) {
   )
 }
 
+#' Clear all files in tempdir()
+#'
+#' Hack used to avoid crashing https://groups.google.com/forum/#!category-topic/stan-users/general/Bg8HhyB6qG4
+clear_tmp <- function() {
+  tmp_files <- list.files(tempdir(), full.names = TRUE)
+  file.remove(tmp_files)
+}
+
 #' Fit Parameteric Bootstrap for Variational Bayes
 #'
 #' @param method [character] The path to stan file containing model fitting
@@ -89,6 +97,7 @@ nmf_posterior_means <- function(samples) {
 bootstrap_vb <- function(method, data, B = 1000) {
   ## First, make a VB fit, to use as the estimated parameters in the parametric
   ## bootstrap
+  clear_tmp()
   f <- stan_model(method)
   vb_fit <- vb(f, data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1)
   samples <- extract(vb_fit)
