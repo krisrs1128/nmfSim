@@ -37,6 +37,7 @@ merge_model_opts <- function(opts = list()) {
 #' @importFrom rstan stan stan_model vb extract cpp_object_initializer
 #' @export
 fit_model <- function(y, model_opts = list()) {
+  model_opts <- merge_model_opts(model_opts)
   stan_data <- list(
     "N" = nrow(y),
     "P" = ncol(y),
@@ -46,7 +47,6 @@ fit_model <- function(y, model_opts = list()) {
     "zero_inf_prob" = model_opts$zero_inf_prob
   )
 
-  clear_tmp()
   if (model_opts$inference == "gibbs") {
     result <- rstan::extract(stan(file = model_opts$method, data = stan_data, chain = 1))
   } else if (model_opts$inference == "vb") {
@@ -71,16 +71,8 @@ nmf_posterior_means <- function(samples) {
   list(
     "theta_hat" = t(ldaSim::posterior_mean(samples$theta, c("k", "i"))),
     "beta_hat" = t(ldaSim::posterior_mean(samples$beta, c("k", "v"))),
-    "prior_hat" = apply(samples$prior_params, c(2, 3), mean)
+    "prior_hat" = colMeans(samples$prior_params)
   )
-}
-
-#' Clear all files in tempdir()
-#'
-#' Hack used to avoid crashing https://groups.google.com/forum/#!category-topic/stan-users/general/Bg8HhyB6qG4
-clear_tmp <- function() {
-  tmp_files <- list.files(tempdir(), full.names = TRUE)
-  file.remove(tmp_files)
 }
 
 #' Fit Parameteric Bootstrap for Variational Bayes
@@ -104,7 +96,7 @@ bootstrap_vb <- function(method, data, B = 1000) {
 
   theta_boot <- array(0, c(B, data$N, data$K))
   beta_boot <- array(0, c(B, data$P, data$K))
-  prior_boot <- matrix(0, c(B, 4))
+  prior_boot <- matrix(0, B, 4)
 
   for (b in seq_len(B)) {
     cat(sprintf("Bootstrap iteration %s\n", b))
@@ -125,7 +117,7 @@ bootstrap_vb <- function(method, data, B = 1000) {
       cur_means <- nmf_posterior_means(extract(cur_fit))
       theta_boot[b,,] <- t(cur_means$theta_hat)
       beta_boot[b,,] <- t(cur_means$beta_hat)
-      prior_boot[b,] <- t(cur_means$prior_hat)
+      prior_boot[b,] <- cur_means$prior_hat
     }
   }
 
