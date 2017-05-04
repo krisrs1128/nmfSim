@@ -47,6 +47,7 @@ fit_model <- function(y, model_opts = list()) {
     "zero_inf_prob" = model_opts$zero_inf_prob
   )
 
+  clear_tmp()
   if (model_opts$inference == "gibbs") {
     result <- rstan::extract(stan(file = model_opts$method, data = stan_data, chain = 1))
   } else if (model_opts$inference == "vb") {
@@ -97,7 +98,6 @@ clear_tmp <- function() {
 bootstrap_vb <- function(method, data, B = 1000) {
   ## First, make a VB fit, to use as the estimated parameters in the parametric
   ## bootstrap
-  clear_tmp()
   f <- stan_model(method)
   vb_fit <- vb(f, data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1)
   samples <- extract(vb_fit)
