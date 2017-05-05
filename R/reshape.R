@@ -42,7 +42,7 @@ match_matrix <- function(X, Z) {
 
   for (i in seq_len(n)) {
     # get maximal correlation in remainding rows
-    rho <- cor(t(X_tilde), t(Z_tilde))
+    rho <- cor(t(X_tilde), t(Z_tilde), method = "spearman")
     max_ix0 <- which(rho == max(rho), arr.ind = TRUE)
 
     max_ix <- c(
@@ -80,8 +80,8 @@ match_matrix <- function(X, Z) {
 reshape_samples <- function(samples, truth, dims) {
   ## align latent factors (label switchign problem)
   pi_align <- match_matrix(
-    t(truth),
-    t(apply(samples, c(2, 3), median))
+    t(sqrt(truth)),
+    t(sqrt(apply(samples, c(2, 3), mean)))
   )
   truth <- truth[, pi_align]
 

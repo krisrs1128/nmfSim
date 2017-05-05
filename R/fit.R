@@ -19,7 +19,6 @@ merge_model_opts <- function(opts = list()) {
     "inference" = "gibbs",
     "method" = file.path(.libPaths(), "nmfSim", "extdata", "nmf_gamma_poisson.stan"),
     "K" = 2,
-    "A" = 1e3,
     "zero_inf_prob" = 0
   )
   modifyList(default_opts, opts)
@@ -43,7 +42,6 @@ fit_model <- function(y, model_opts = list()) {
     "P" = ncol(y),
     "y" = y,
     "K" = model_opts$K,
-    "A" = model_opts$A,
     "zero_inf_prob" = model_opts$zero_inf_prob
   )
 

@@ -9,7 +9,6 @@ data{
   int<lower=0> P;
   int<lower=0> K;
   int<lower=0> y[N, P];
-  real<lower=0> A;
 }
 
 parameters{
@@ -19,11 +18,6 @@ parameters{
 }
 
 model{
-  for (i in 1:4) {
-    prior_params[i] ~ gamma(2, 1 / A);
-
-  }
-
   for(i in 1:N) {
     theta[i] ~ gamma(prior_params[1], prior_params[2]); // componentwise gamma
   }
