@@ -2,7 +2,7 @@ Package: nmfSim
 Title: Helpers for Conducting Simulations with NMF
 Version: 0.0.0.9000
 Authors@R: person("Kris", "Sankaran", email = "kriss1@stanford.edu", role = c("aut", "cre"))
-Description: Our goal is to make it easy to reproduce simulations described in {}.
+Description: Our goal is to make it easy to reproduce simulations described in Latent variable modeling for the microbiome.
 Depends:
     R (>= 3.3.0),
     Rcpp (>= 0.11.3)
