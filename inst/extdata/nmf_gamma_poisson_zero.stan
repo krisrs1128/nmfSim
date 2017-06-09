@@ -9,7 +9,6 @@ data{
   int<lower=0> P;
   int<lower=0> K;
   int<lower=0> y[N, P];
-  real<lower=0> A;
   real<lower=0, upper=1> zero_inf_prob;
 }
 
