@@ -15,7 +15,7 @@ merge_nmf_opts <- function(opts = list()) {
   default_opts <- list(
     "K" = 2,
     "N" = 100,
-    "P" = 75,
+    "P" = 750,
     "prior_params" = rep(1, 4),
     "zero_inf_prob" = 0
   )
