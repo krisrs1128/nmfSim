@@ -45,12 +45,11 @@ fit_model <- function(y, model_opts = list()) {
     "zero_inf_prob" = model_opts$zero_inf_prob
   )
 
-  clear_tmp()
   if (model_opts$inference == "gibbs") {
-    result <- rstan::extract(stan(file = model_opts$method, data = stan_data, chain = 1))
+    result <- rstan::extract(stan(file = model_opts$method, data = stan_data, chain = 1, warmup = 1000, iter = 1100))
   } else if (model_opts$inference == "vb") {
     f <- stan_model(model_opts$method)
-    result <- rstan::extract(vb(f, stan_data))
+    result <- rstan::extract(vb(f, stan_data, output_samples = 100))
   } else if (model_opts$inference == "bootstrap") {
     result <- bootstrap_vb(model_opts$method, data = stan_data)
   } else {
@@ -93,11 +92,11 @@ clear_tmp <- function() {
 #'   array similar to what is output by stan(), except columns are now bootstrap
 #'   replicates instead of sampling iterations
 #' @export
-bootstrap_vb <- function(method, data, B = 1000) {
+bootstrap_vb <- function(method, data, B = 100) {
   ## First, make a VB fit, to use as the estimated parameters in the parametric
   ## bootstrap
   f <- stan_model(method)
-  vb_fit <- vb(f, data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1)
+  vb_fit <- vb(f, data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1, output_samples = 100)
   samples <- extract(vb_fit)
   means0 <- nmf_posterior_means(samples)
 
@@ -118,7 +117,7 @@ bootstrap_vb <- function(method, data, B = 1000) {
 
     ## Fit another VB iteration
     cur_fit <- try(
-      vb(f, cur_data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1)
+      vb(f, cur_data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1, output_samples = 100)
     )
     if (class(cur_fit) != "try-error") {
       cur_means <- nmf_posterior_means(extract(cur_fit))
