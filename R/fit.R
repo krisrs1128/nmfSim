@@ -46,7 +46,13 @@ fit_model <- function(y, model_opts = list()) {
   )
 
   if (model_opts$inference == "gibbs") {
-    result <- rstan::extract(stan(file = model_opts$method, data = stan_data, chain = 1, warmup = 1000, iter = 1100))
+    result <- rstan::extract(stan(
+                       file = model_opts$method,
+                       data = stan_data,
+                       chain = 1,
+                       warmup = 1000,
+                       iter = 1100
+                     ))
   } else if (model_opts$inference == "vb") {
     f <- stan_model(model_opts$method)
     result <- rstan::extract(vb(f, stan_data, output_samples = 100))
