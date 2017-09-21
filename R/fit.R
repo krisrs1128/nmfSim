@@ -45,6 +45,7 @@ fit_model <- function(y, model_opts = list()) {
     "zero_inf_prob" = model_opts$zero_inf_prob
   )
 
+  clear_tmp()
   if (model_opts$inference == "gibbs") {
     result <- rstan::extract(stan(
                        file = model_opts$method,
