@@ -52,11 +52,11 @@ fit_model <- function(y, model_opts = list()) {
                        data = stan_data,
                        chain = 1,
                        warmup = 1000,
-                       iter = 1100
+                       iter = 1500
                      ))
   } else if (model_opts$inference == "vb") {
     f <- stan_model(model_opts$method)
-    result <- rstan::extract(vb(f, stan_data, output_samples = 100))
+    result <- rstan::extract(vb(f, stan_data, output_samples = 500))
   } else if (model_opts$inference == "bootstrap") {
     result <- bootstrap_vb(model_opts$method, data = stan_data)
   } else {
@@ -99,7 +99,7 @@ clear_tmp <- function() {
 #'   array similar to what is output by stan(), except columns are now bootstrap
 #'   replicates instead of sampling iterations
 #' @export
-bootstrap_vb <- function(method, data, B = 100) {
+bootstrap_vb <- function(method, data, B = 500) {
   ## First, make a VB fit, to use as the estimated parameters in the parametric
   ## bootstrap
   f <- stan_model(method)
