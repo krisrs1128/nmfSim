@@ -29,6 +29,7 @@
 #' @export
 write_configs <- function(config_df,
                           n_batches = 50,
+                          completed_fits = c(),
                           config_path = "config.json",
                           base_id = "fit",
                           output_dir = "./") {
@@ -51,5 +52,6 @@ write_configs <- function(config_df,
     config[[i]]$batch <- config_df[i, "batch"]
   }
 
-  cat(toJSON(config, auto_unbox = TRUE), file = config_path)
+  remove_ids <- sapply(config, function(x) x$id) %in% gsub(".rda", "", completed_fits)
+  cat(toJSON(config[!remove_ids], auto_unbox = TRUE), file = config_path)
 }
