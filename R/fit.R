@@ -103,7 +103,7 @@ bootstrap_vb <- function(method, data, B = 500) {
   ## First, make a VB fit, to use as the estimated parameters in the parametric
   ## bootstrap
   f <- stan_model(method)
-  vb_fit <- vb(f, data, check_data = FALSE, adapt_engaged = FALSE, eta = 1, output_samples = B)
+  vb_fit <- vb(f, data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1, output_samples = B)
   samples <- extract(vb_fit)
   means0 <- nmf_posterior_means(samples)
 
@@ -124,7 +124,7 @@ bootstrap_vb <- function(method, data, B = 500) {
 
     ## Fit another VB iteration
     cur_fit <- try(
-      vb(f, cur_data, check_data = FALSE, adapt_engaged = FALSE, eta = 1, output_samples = B)
+      vb(f, cur_data, check_data = FALSE, adapt_engaged = FALSE, eta = 0.1, output_samples = B)
     )
     if (class(cur_fit) != "try-error") {
       cur_means <- nmf_posterior_means(extract(cur_fit))
